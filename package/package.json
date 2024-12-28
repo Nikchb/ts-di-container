@@ -4,6 +4,8 @@
   "description": "A dependency injection container with support for singletons, scoped and transient services, and services disposal functionality.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
+  "module": "ES6",
   "scripts": {
     "build": "tsc"
   },
@@ -12,10 +14,6 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "@types/uuid": "^9.0.0",
     "typescript": "^5.7.2"
-  },
-  "dependencies": {
-    "uuid": "^9.0.0"
   }
 }

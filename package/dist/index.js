@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,8 +7,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-const uuid_1 = require("uuid");
 class DIContainer {
     constructor(serviceConfigs, singelton) {
         // create service configs map
@@ -29,7 +26,7 @@ class DIContainer {
             this.singelton = new DIContainer(serviceConfigs, true);
         }
         // create services map
-        this.services = new Map();
+        this.services = [];
     }
     addSingelton(name, create, dispose) {
         // if singelton is defined, add service to singelton container
@@ -38,7 +35,7 @@ class DIContainer {
         }
         else {
             // add service to service configs map (this container is singelton container by itself)
-            this.serviceConfigs.set(name, { create, type: 'singelton', dispose });
+            this.serviceConfigs.set(name, { create, type: "singelton", dispose });
         }
     }
     addScoped(name, create, dispose) {
@@ -47,7 +44,7 @@ class DIContainer {
             throw new Error("Can not add scoped service to singelton contaioner");
         }
         // add service to service configs map
-        this.serviceConfigs.set(name, { create, type: 'scoped', dispose });
+        this.serviceConfigs.set(name, { create, type: "scoped", dispose });
     }
     addTransient(name, create, dispose) {
         // if this container is singelton by itself, throw error
@@ -55,27 +52,29 @@ class DIContainer {
             throw new Error("Can not add transient service to singelton contaioner");
         }
         // add service to service configs map
-        this.serviceConfigs.set(name, { create, type: 'transient', dispose });
+        this.serviceConfigs.set(name, { create, type: "transient", dispose });
     }
     createContainer() {
         return new DIContainer(this.serviceConfigs, this.singelton);
     }
     get(name) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             // get service config
             const serviceConfig = this.serviceConfigs.get(name);
+            // if service config does not exist or is singelton and this container is not the singelton container, return the singelton container's service
+            if ((!serviceConfig || serviceConfig.type === "singelton") &&
+                this.singelton) {
+                return this.singelton.get(name);
+            }
             // check if service config exists
             if (!serviceConfig) {
                 throw new Error(`Service ${name} not registered`);
             }
-            // if service config is singelton and this is not the singelton container, return the singelton container's service
-            if (serviceConfig.type === 'singelton' && this.singelton) {
-                return this.singelton.get(name);
-            }
             let service;
             // try to get service from services map if it is not transient
-            if (serviceConfig.type !== 'transient') {
-                service = this.services.get(name);
+            if (serviceConfig.type !== "transient") {
+                service = (_a = this.services.find((service) => service.name === name)) === null || _a === void 0 ? void 0 : _a.instance;
                 // if service is found, return it
                 if (service) {
                     return service;
@@ -84,25 +83,35 @@ class DIContainer {
             // if service is not found, create it
             service = yield serviceConfig.create(this);
             // save service to services map
-            this.services.set(serviceConfig.type !== 'transient' ? name : (0, uuid_1.v4)(), service);
+            this.services.push({ name, instance: service });
             // return service
             return service;
         });
     }
     dispose() {
-        this.services.forEach((service, name) => __awaiter(this, void 0, void 0, function* () {
-            // get service config
-            const serviceConfig = this.serviceConfigs.get(name);
-            // dispose service
-            if (serviceConfig.dispose) {
-                yield serviceConfig.dispose(service);
+        return __awaiter(this, arguments, void 0, function* (disposeSingelton = false) {
+            const disposedServices = [];
+            for (let service of this.services) {
+                // get service config
+                const serviceConfig = this.serviceConfigs.get(service.name);
+                // dispose service
+                if (serviceConfig.dispose) {
+                    yield serviceConfig.dispose(service.instance);
+                    disposedServices.push(service.name);
+                }
             }
-        }));
-        // clear services map
-        this.services.clear();
-        // clear service configs map
-        this.serviceConfigs.clear();
+            // clear services map
+            this.services = [];
+            // clear service configs map
+            this.serviceConfigs.clear();
+            // if disposeSingelton is true, dispose the singelton container
+            if (disposeSingelton && this.singelton) {
+                disposedServices.push(...(yield this.singelton.dispose(true)));
+            }
+            // return disposed services names
+            return disposedServices;
+        });
     }
 }
-exports.default = DIContainer;
+export default DIContainer;
 //# sourceMappingURL=index.js.map

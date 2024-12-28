@@ -1,5 +1,5 @@
 type DIServiceConfig<T> = {
-    type: 'singelton' | 'scoped' | 'transient';
+    type: "singelton" | "scoped" | "transient";
     create: (container: DIContainer) => Promise<T>;
     dispose?: (instance: T) => Promise<void>;
 };
@@ -13,7 +13,7 @@ declare class DIContainer {
     addTransient<T>(name: string, create: (container: DIContainer) => Promise<T>, dispose?: (instance: T) => Promise<void>): void;
     createContainer(): DIContainer;
     get<T>(name: string): Promise<T>;
-    dispose(): void;
+    dispose(disposeSingelton?: boolean): Promise<string[]>;
 }
 export default DIContainer;
 //# sourceMappingURL=index.d.ts.map
