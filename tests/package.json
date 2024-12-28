@@ -1,0 +1,22 @@
+{
+  "name": "ts-di-container-tests",
+  "version": "1.0.0",
+  "description": "Tests for ts-di-container",
+  "main": "index.test.js",
+  "type": "module",
+  "module": "NodeNext",
+  "scripts": {
+    "test": "npm ci && vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "ts-di-container": "file:../package",
+    "vitest": "^2.1.8"
+  }
+}
