@@ -1,5 +1,5 @@
 {
-  "name": "ts-di-container",
+  "name": "ts-dependency-injection-container",
   "version": "1.0.0",
   "description": "A dependency injection container with support for singletons, scoped and transient services, and services disposal functionality.",
   "main": "dist/index.js",
