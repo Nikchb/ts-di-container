@@ -22,5 +22,5 @@ declare class DIContainer extends DIContainerTemplate implements IDIContainer {
     get<T>(name: string): Promise<T>;
     dispose(disposeSingelton?: boolean): Promise<string[]>;
 }
-export default DIContainer;
+export default DIContainerTemplate;
 //# sourceMappingURL=index.d.ts.map

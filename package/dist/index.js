@@ -117,5 +117,5 @@ class DIContainer extends DIContainerTemplate {
         });
     }
 }
-export default DIContainer;
+export default DIContainerTemplate;
 //# sourceMappingURL=index.js.map
