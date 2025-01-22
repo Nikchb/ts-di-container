@@ -1,4 +1,4 @@
-import DIContainer from "ts-di-container";
+import DIContainerTemplate from "ts-di-container";
 import { describe, it, test, expect } from "vitest";
 
 class ClassA {
@@ -35,20 +35,22 @@ class ClassC {
 }
 
 describe("DIContainer tests", () => {
-  it("Create empty container", () => {
-    const container = new DIContainer();
-    expect(container).toBeDefined();
+  it("Create empty container template", () => {
+    const containerTemplate = new DIContainerTemplate();
+    expect(containerTemplate).toBeDefined();
   });
 
   it("Register singleton service and dispose container", async () => {
     // create container
-    const container = new DIContainer();
+    const containerTemplate = new DIContainerTemplate();
     // register singleton service
-    container.addSingelton<ClassA>(
+    containerTemplate.addSingelton<ClassA>(
       "ClassA",
       async () => new ClassA(),
       async (instance) => instance.dispose()
     );
+    // construct container
+    const container = containerTemplate.createContainer();
     // get singleton service
     const classA = await container.get<ClassA>("ClassA");
     // expect ClassA to be instance of ClassA
@@ -61,19 +63,21 @@ describe("DIContainer tests", () => {
 
   it("Register singleton service and get it from another container and dispose", async () => {
     // create container
-    const container1 = new DIContainer();
+    const containerTemplate = new DIContainerTemplate();
     // register singleton service
-    container1.addSingelton<ClassA>(
+    containerTemplate.addSingelton<ClassA>(
       "ClassA",
       async () => new ClassA(),
       async (instance) => instance.dispose()
     );
-    // create another container2 from container1
-    const container2 = container1.createContainer();
-    // get singleton service from container1
+    // create container
+    const container1 = containerTemplate.createContainer();
+    // create another container
+    const container2 = containerTemplate.createContainer();
+    // get singleton service from container
     const classA1 = await container1.get<ClassA>("ClassA");
-    // get singleton service from container2
-    const classA2 = await container2.get<ClassA>("ClassA");
+    // get singleton service from container
+    const classA2 = await container1.get<ClassA>("ClassA");
     // expect ClassA1 to be instance of ClassA
     expect(classA1).toBeInstanceOf(ClassA);
     // expect ClassA2 to be instance of ClassA
@@ -92,14 +96,16 @@ describe("DIContainer tests", () => {
   });
 
   it("Register scoped service and dispose container", async () => {
-    // create container
-    const container = new DIContainer();
+    // create container template
+    const containerTemplate = new DIContainerTemplate();
     // register scoped service
-    container.addScoped<ClassA>(
+    containerTemplate.addScoped<ClassA>(
       "ClassA",
       async () => new ClassA(),
       async (instance) => instance.dispose()
     );
+    // construct container
+    const container = containerTemplate.createContainer();
     // get scoped service from container
     const classA1 = await container.get<ClassA>("ClassA");
     // get scoped service from container
@@ -118,14 +124,16 @@ describe("DIContainer tests", () => {
   });
 
   it("Register transient service and dispose container", async () => {
-    // create container
-    const container = new DIContainer();
+    // create container template
+    const containerTemplate = new DIContainerTemplate();
     // register transient service
-    container.addTransient<ClassA>(
+    containerTemplate.addTransient<ClassA>(
       "ClassA",
       async () => new ClassA(),
       async (instance) => instance.dispose()
     );
+    // construct container
+    const container = containerTemplate.createContainer();
     // get transient service from container
     const classA1 = await container.get<ClassA>("ClassA");
     // get transient service from container
@@ -143,30 +151,32 @@ describe("DIContainer tests", () => {
   });
 
   it("Register all services types and dispose container", async () => {
-    // create container
-    const container = new DIContainer();
+    // create container template
+    const containerTemplate = new DIContainerTemplate();
     // register singleton service
-    container.addSingelton<ClassA>(
+    containerTemplate.addSingelton<ClassA>(
       "ClassA",
       async () => new ClassA(),
       async (instance) => instance.dispose()
     );
     // register scoped service
-    container.addScoped<ClassB>(
+    containerTemplate.addScoped<ClassB>(
       "ClassB",
-      async () => new ClassB(await container.get<ClassA>("ClassA")),
+      async (container) => new ClassB(await container.get<ClassA>("ClassA")),
       async (instance) => instance.dispose()
     );
     // register transient service
-    container.addTransient<ClassC>(
+    containerTemplate.addTransient<ClassC>(
       "ClassC",
-      async () =>
+      async (container) =>
         new ClassC(
           await container.get<ClassA>("ClassA"),
           await container.get<ClassB>("ClassB")
         ),
       async (instance) => instance.dispose()
     );
+    // construct container
+    const container = containerTemplate.createContainer();
     // get ClassC
     await container.get<ClassC>("ClassC");
     // dispose container
@@ -177,30 +187,32 @@ describe("DIContainer tests", () => {
   });
 
   it("Register all services types and dispose container with singelton", async () => {
-    // create container
-    const container = new DIContainer();
+    // create container template
+    const containerTemplate = new DIContainerTemplate();
     // register singleton service
-    container.addSingelton<ClassA>(
+    containerTemplate.addSingelton<ClassA>(
       "ClassA",
       async () => new ClassA(),
       async (instance) => instance.dispose()
     );
     // register scoped service
-    container.addScoped<ClassB>(
+    containerTemplate.addScoped<ClassB>(
       "ClassB",
-      async () => new ClassB(await container.get<ClassA>("ClassA")),
+      async (container) => new ClassB(await container.get<ClassA>("ClassA")),
       async (instance) => instance.dispose()
     );
     // register transient service
-    container.addTransient<ClassC>(
+    containerTemplate.addTransient<ClassC>(
       "ClassC",
-      async () =>
+      async (container) =>
         new ClassC(
           await container.get<ClassA>("ClassA"),
           await container.get<ClassB>("ClassB")
         ),
       async (instance) => instance.dispose()
     );
+    // construct container
+    const container = containerTemplate.createContainer();
     // get ClassC
     await container.get<ClassC>("ClassC");
     // dispose container

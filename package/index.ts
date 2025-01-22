@@ -6,7 +6,7 @@ type DIServiceConfig<T> = {
 
 interface IDIContainer {
   get<T>(name: string): Promise<T>;
-  dispose(disposeSingelton: boolean): Promise<string[]>;
+  dispose(disposeSingelton?: boolean): Promise<string[]>;
 }
 
 class DIContainerTemplate {
