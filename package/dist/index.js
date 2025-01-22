@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-class DIContainer {
+class DIContainerTemplate {
     constructor(serviceConfigs, singelton) {
         // create service configs map
         this.serviceConfigs = new Map();
@@ -25,8 +25,6 @@ class DIContainer {
         if (!singelton) {
             this.singelton = new DIContainer(serviceConfigs, true);
         }
-        // create services map
-        this.services = [];
     }
     addSingelton(name, create, dispose) {
         // if singelton is defined, add service to singelton container
@@ -56,6 +54,12 @@ class DIContainer {
     }
     createContainer() {
         return new DIContainer(this.serviceConfigs, this.singelton);
+    }
+}
+class DIContainer extends DIContainerTemplate {
+    constructor(serviceConfigs, singelton) {
+        super(serviceConfigs, singelton);
+        this.services = [];
     }
     get(name) {
         return __awaiter(this, void 0, void 0, function* () {

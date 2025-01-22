@@ -1,15 +1,18 @@
 type DIServiceConfig<T> = {
   type: "singelton" | "scoped" | "transient";
-  create: (container: DIContainer) => Promise<T>;
+  create: (container: IDIContainer) => Promise<T>;
   dispose?: (instance: T) => Promise<void>;
 };
 
-class DIContainer {
-  private singelton?: DIContainer; // underfined if this it is singelton container by itself
+interface IDIContainer {
+  get<T>(name: string): Promise<T>;
+  dispose(disposeSingelton: boolean): Promise<string[]>;
+}
 
-  private serviceConfigs: Map<string, DIServiceConfig<any>>;
+class DIContainerTemplate {
+  protected singelton?: DIContainer; // underfined if this it is singelton container by itself
 
-  private services: { name: string; instance: any }[];
+  protected serviceConfigs: Map<string, DIServiceConfig<any>>;
 
   constructor(
     serviceConfigs?: Map<string, DIServiceConfig<any>>,
@@ -31,13 +34,11 @@ class DIContainer {
     if (!singelton) {
       this.singelton = new DIContainer(serviceConfigs, true);
     }
-    // create services map
-    this.services = [];
   }
 
   public addSingelton<T>(
     name: string,
-    create: (container: DIContainer) => Promise<T>,
+    create: (container: IDIContainer) => Promise<T>,
     dispose?: (instance: T) => Promise<void>
   ) {
     // if singelton is defined, add service to singelton container
@@ -51,7 +52,7 @@ class DIContainer {
 
   public addScoped<T>(
     name: string,
-    create: (container: DIContainer) => Promise<T>,
+    create: (container: IDIContainer) => Promise<T>,
     dispose?: (instance: T) => Promise<void>
   ) {
     // if this container is singelton by itself, throw error
@@ -64,7 +65,7 @@ class DIContainer {
 
   public addTransient<T>(
     name: string,
-    create: (container: DIContainer) => Promise<T>,
+    create: (container: IDIContainer) => Promise<T>,
     dispose?: (instance: T) => Promise<void>
   ) {
     // if this container is singelton by itself, throw error
@@ -75,8 +76,20 @@ class DIContainer {
     this.serviceConfigs.set(name, { create, type: "transient", dispose });
   }
 
-  public createContainer(): DIContainer {
-    return new DIContainer(this.serviceConfigs, this.singelton);
+  public createContainer(): IDIContainer {
+    return new DIContainer(this.serviceConfigs, this.singelton) as IDIContainer;
+  }
+}
+
+class DIContainer extends DIContainerTemplate implements IDIContainer {
+  private services: { name: string; instance: any }[];
+
+  constructor(
+    serviceConfigs?: Map<string, DIServiceConfig<any>>,
+    singelton?: DIContainer | true
+  ) {
+    super(serviceConfigs, singelton);
+    this.services = [];
   }
 
   public async get<T>(name: string): Promise<T> {
@@ -137,4 +150,4 @@ class DIContainer {
   }
 }
 
-export default DIContainer;
+export default DIContainerTemplate;
