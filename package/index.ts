@@ -4,7 +4,7 @@ type DIServiceConfig<T> = {
   dispose?: (instance: T) => Promise<void>;
 };
 
-interface IDIContainer {
+export interface IDIContainer {
   get<T>(name: string): Promise<T>;
   dispose(disposeSingelton?: boolean): Promise<string[]>;
 }
